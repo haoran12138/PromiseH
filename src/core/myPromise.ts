@@ -30,7 +30,7 @@ export default class MyPromise {
     this.onRejectedCabs = [];
     fn(
       (value) => {
-        fulfilledPromise(this, value);
+        resolvePromise(this, value);
       },
       (reason) => {
         rejectedPromise(this, reason);

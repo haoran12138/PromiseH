@@ -110,7 +110,7 @@ class MyPromise {
         this.onFulfilledCabs = [];
         this.onRejectedCabs = [];
         fn((value) => {
-            fulfilledPromise(this, value);
+            resolvePromise(this, value);
         }, (reason) => {
             rejectedPromise(this, reason);
         });
