@@ -1,11 +1,11 @@
-import { promiseState, ThenFn, resolver } from "../type";
+import { promiseState, resolver, ThenFn } from "../type";
 export default class MyPromise {
     state: promiseState;
     result: any;
-    onFulfilledCabs: ThenFn[];
-    onRejectedCabs: ThenFn[];
+    onFulfilledFns: ThenFn[];
+    onRejectedFns: ThenFn[];
     static resolve(value: any): MyPromise;
     static reject(reason: any): MyPromise;
     constructor(fn: resolver);
-    then(onFulfilled: any, onRejected: any): MyPromise;
+    then(onFulfilled?: ThenFn, onRejected?: ThenFn): any;
 }

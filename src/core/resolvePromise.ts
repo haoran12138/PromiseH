@@ -1,77 +1,63 @@
 import {
-  isMyPromise,
-  rejectedPromise,
-  fulfilledPromise,
+  isPromise,
   isFunction,
-  isPlanObject,
+  isPlainObject,
+  onFulfilledPromise,
+  onRejectedPromise,
+
 } from "./utils";
+
 
 export default function resolvePromise(promise, x) {
   if (promise === x) {
-    return rejectedPromise(
-      promise,
-      new TypeError("Chaining cycle detected for promise")
-    );
+    onRejectedPromise(promise, new TypeError('Chaining cycle detected for promise'))
+    return
   }
-  if (isMyPromise(x)) {
-    if (x.state === "pending") {
-      x.then(
-        (value) => {
-          resolvePromise(promise, value);
-        },
-        (reason) => {
-          rejectedPromise(promise, reason);
-        }
-      );
-      return;
+  if (isPromise(x)) {
+    if (x.status === 'pending') {
+      x.then(value => {
+        resolvePromise(promise, value)
+      }, reason => {
+        onRejectedPromise(promise, reason)
+      })
     }
-    if (x.state === "fulfilled") {
-      fulfilledPromise(promise, x.result);
-      return;
+    if (x.status === 'fulfilled') {
+      onFulfilledPromise(promise, x.result)
     }
-    if (x.state === "rejected") {
-      rejectedPromise(promise, x.result);
-      return;
+    if (x.status === 'rejected') {
+      onRejectedPromise(promise, x.result)
     }
     return;
   }
-
-  if (isFunction(x) || isPlanObject(x)) {
+  if (isFunction(x) || isPlainObject(x)) {
     let flag = false;
-    let then;
+    let then
     try {
-      then = x.then;
-    } catch (err) {
-      rejectedPromise(promise, err);
+      then = x.then
+    } catch (e) {
+      onRejectedPromise(promise, e)
       return;
     }
-
     if (isFunction(then)) {
       try {
-        then.call(
-          x,
-          (y) => {
-            if (flag) return;
-            flag = true;
-            resolvePromise(promise, y);
-          },
-          (r) => {
-            if (flag) return;
-            flag = true;
-            rejectedPromise(promise, r);
-          }
-        );
-      } catch (err) {
-        if (flag) return;
+        then.call(x, y => {
+          if (flag) return
+          flag = true;
+          resolvePromise(promise, y)
+        }, r => {
+          if (flag) return
+          flag = true;
+          onRejectedPromise(promise, r)
+        })
+      } catch (e) {
+        if (flag) return
         flag = true;
-        rejectedPromise(promise, err);
+        onRejectedPromise(promise, e)
       }
     } else {
-      fulfilledPromise(promise, x);
-      return
+      onFulfilledPromise(promise, x)
     }
   } else {
-    fulfilledPromise(promise, x);
-    return
+    onFulfilledPromise(promise, x)
   }
 }
